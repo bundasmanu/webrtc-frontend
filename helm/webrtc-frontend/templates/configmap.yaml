@@ -1,0 +1,12 @@
+{{- if .Values.runtimeConfig.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "webrtc-frontend.fullname" . }}-config
+  labels:
+    {{- include "webrtc-frontend.labels" . | nindent 4 }}
+data:
+  config.json: |
+    {{- $cfg := dict "sipWssUri" .Values.runtimeConfig.sipWssUri "iceServers" .Values.runtimeConfig.iceServers "jssipDebug" .Values.runtimeConfig.jssipDebug }}
+    {{- toJson $cfg | nindent 4 }}
+{{- end }}

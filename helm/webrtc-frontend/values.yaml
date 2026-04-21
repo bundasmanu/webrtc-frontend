@@ -1,0 +1,30 @@
+replicaCount: 2
+
+image:
+  repository: webrtc-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: webrtc-frontend.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources: {}
+
+# Mounted as /usr/share/nginx/html/config.json (overrides defaults baked at image build time).
+runtimeConfig:
+  enabled: true
+  sipWssUri: ""
+  iceServers: []
+  jssipDebug: false
