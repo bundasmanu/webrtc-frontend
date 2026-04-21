@@ -4,6 +4,8 @@ dist
 *.local
 .env
 .env.*.local
+docker/local.config.json.example
 
 #Ignore cursor AI rules
 .cursor/rules/codacy.mdc
+
