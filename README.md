@@ -9,7 +9,7 @@ Minimal **Vue 3 + TypeScript** SPA using **JsSIP** in the browser to register ag
 - Clear **registration errors** (wrong credentials, timeouts, SIP status codes).
 - **Call**, **accept** / **reject**, **hang up**, **hold** / **unhold**, optional **auto-answer** on incoming calls.
 - **ICE** defaults to Google **STUN**; override with JSON (dev env or runtime `config.json`).
-- **Docker** image (nginx serves static `dist/` on port **8080**).
+- **Docker** image (nginx serves static `dist/` on port **8078**).
 - **Helm** chart with optional **ConfigMap**-mounted `config.json` (no image rebuild when changing WSS / ICE).
 
 ### SPA pods vs Kamailio WSS
@@ -56,28 +56,24 @@ Static hosting via **GitHub Actions** (see [`.github/workflows/pages.yml`](.gith
 
 ## Docker
 
-The container runs **nginx** and serves the production build on port **8080**. Choose one path:
+The container runs **nginx** and serves the production build on port **8078**. Choose one path:
 
 | Approach | When to use |
 |----------|----------------|
-| **Docker Compose** | Local testing: one command builds and runs, with an optional mounted `config.json`. |
+| **Docker Compose** | Local testing with **host** networking (nginx on host **:8078**). |
 | **`docker` CLI only** | You prefer not to use Compose, or you are scripting `build` / `run` yourself. |
 
 Runtime `config.json` overrides WSS / ICE **without rebuilding** the image (see [Configuration](#configuration)). Your SIP URI (`user@domain`) is always entered in the web UI at login.
 
 ### Docker Compose (recommended for local runs)
 
-[`docker-compose.yml`](docker-compose.yml) defines a single service that:
-
-1. **`docker compose up --build`** — builds the image (if needed) and starts the container.
-2. Maps **host `8080` → container `8080`**.
-3. Mounts **[`docker/local.config.json.example`](docker/local.config.json.example)** onto `/usr/share/nginx/html/config.json` (edit that file for your dev WSS URL and ICE; placeholders are committed—adjust locally as needed).
+[`docker-compose.yml`](docker-compose.yml) uses **`network_mode: host`**: nginx listens on the host at **`:8078`** (no published ports). Mounts **[`docker/local.config.json.example`](docker/local.config.json.example)** onto `/usr/share/nginx/html/config.json` (edit that file for WSS / ICE). Works as expected on **Linux**; **Docker Desktop** may handle host networking differently.
 
 ```bash
 docker compose up --build
 ```
 
-Open **http://localhost:8080**. Stop with **Ctrl+C** or `docker compose down`.
+Open **http://localhost:8078**. Stop with **Ctrl+C** or `docker compose down`.
 
 ### Docker CLI (without Compose)
 
@@ -85,7 +81,7 @@ Build once, then run:
 
 ```bash
 docker build -t webrtc-frontend:latest .
-docker run --rm -p 8080:8080 webrtc-frontend:latest
+docker run --rm -p 8078:8078 webrtc-frontend:latest
 ```
 
 That uses only the **defaults baked in** by `Dockerfile` `ENV` (no mounted file).
@@ -94,9 +90,15 @@ To apply the **same runtime `config.json`** as Compose (mount the same example f
 
 ```bash
 docker build -t webrtc-frontend:latest .
-docker run --rm -p 8080:8080 \
+docker run --rm -p 8078:8078 \
   -v "$(pwd)/docker/local.config.json.example:/usr/share/nginx/html/config.json:ro" \
   webrtc-frontend:latest
+```
+
+Host networking with the CLI (Linux):
+
+```bash
+docker run --rm --network host webrtc-frontend:latest
 ```
 
 ## Helm
@@ -105,12 +107,14 @@ docker run --rm -p 8080:8080 \
 helm upgrade --install webrtc ./helm/webrtc-frontend \
   --set image.repository=your-registry/webrtc-frontend \
   --set image.tag=latest \
-  --set runtimeConfig.sipWssUri=wss://edge.example:5061 \
+  --set runtimeConfig.sipWssUri=wss://edge.example:443 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=webrtc.example.com
 ```
 
 Set `runtimeConfig.iceServers` in `values.yaml` if you need **TURN** (e.g. restrictive NAT).
+
+**DEV only — bypass Chrome certificate checks (e.g. self-signed WSS):** `open -a "Google Chrome" --args --ignore-certificate-errors --user-data-dir=/tmp/chrome-insecure-dev-profile`
 
 ## Troubleshooting
 

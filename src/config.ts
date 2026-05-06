@@ -23,7 +23,7 @@ function envConfig(): AppConfig {
   return {
     sipWssUri:
       import.meta.env.VITE_SIP_WSS_URI ??
-      "wss://kamailio-edge.example.invalid:5061",
+      "wss://kamailio-edge.example.invalid:443",
     iceServers: parseIceServersJson(import.meta.env.VITE_ICE_SERVERS_JSON),
     jssipDebug: import.meta.env.VITE_JSSIP_DEBUG === "true",
   };

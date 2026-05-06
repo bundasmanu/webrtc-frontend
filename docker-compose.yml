@@ -1,15 +1,17 @@
 # Dev: build + run with runtime config from docker/local.config.json.example
 # (mounted as /usr/share/nginx/html/config.json). Edit that file for WSS / ICE.
 #
+# Uses host networking: nginx listens on the host at :8078 (no port mapping).
+# Linux-friendly; Docker Desktop behavior may differ.
+#
 #   docker compose up --build
 #
-# Open http://localhost:8080
+# Open http://localhost:8078
 
 services:
   webrtc-frontend:
     build: .
     image: webrtc-frontend:local
-    ports:
-      - "8080:8080"
+    network_mode: host
     volumes:
       - ./docker/local.config.json.example:/usr/share/nginx/html/config.json:ro

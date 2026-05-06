@@ -8,7 +8,7 @@ RUN npm ci
 
 COPY . .
 
-ENV VITE_SIP_WSS_URI=wss://kamailio-edge.example.invalid:5061
+ENV VITE_SIP_WSS_URI=wss://kamailio-edge.example.invalid:443
 ENV VITE_ICE_SERVERS_JSON=
 ENV VITE_JSSIP_DEBUG=false
 
@@ -20,6 +20,6 @@ FROM nginx:1.27-alpine
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 8080
+EXPOSE 8078
 
 CMD ["nginx", "-g", "daemon off;"]
