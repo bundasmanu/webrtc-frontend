@@ -1,15 +1,17 @@
 import JsSIP from "jssip";
-import type { RTCSession } from "jssip/lib/RTCSession";
-import {
-  SessionDirection,
-  type EndEvent,
-  type PeerConnectionEvent,
+import type {
+  EndEvent,
+  PeerConnectionEvent,
+  RTCSession,
 } from "jssip/lib/RTCSession";
 import type { IncomingResponse } from "jssip/lib/SIPMessage";
 import type { RTCSessionEvent, UnRegisteredEvent } from "jssip/lib/UA";
 import type { AppConfig } from "@/config";
 import { parseSipIdentity } from "./parseSipIdentity";
 import type { CallUiState } from "./types";
+
+/** JsSIP sets `RTCSession.direction` to these strings at runtime; `SessionDirection` from typings is not bundled. */
+const SIP_DIRECTION_INCOMING = "incoming";
 
 export type RegistrationStatus = "idle" | "registering" | "registered" | "failed";
 
@@ -128,10 +130,10 @@ export class SipLab {
       this.cb.onSessionInfo({
         remote,
         direction:
-          session.direction === SessionDirection.INCOMING ? "in" : "out",
+          session.direction === SIP_DIRECTION_INCOMING ? "in" : "out",
       });
 
-      if (session.direction === SessionDirection.INCOMING) {
+      if (session.direction === SIP_DIRECTION_INCOMING) {
         this.cb.onCallState("ringing_in");
         this.cb.onLog(`Incoming from ${remote}`);
         if (this.autoAnswer) {
@@ -193,7 +195,7 @@ export class SipLab {
   answer(): void {
     if (
       !this.session ||
-      this.session.direction !== SessionDirection.INCOMING
+      this.session.direction !== SIP_DIRECTION_INCOMING
     )
       return;
     this.cb.onLog("Answering…");
@@ -206,7 +208,7 @@ export class SipLab {
   reject(): void {
     if (
       !this.session ||
-      this.session.direction !== SessionDirection.INCOMING
+      this.session.direction !== SIP_DIRECTION_INCOMING
     )
       return;
     this.cb.onLog("Rejecting call.");
