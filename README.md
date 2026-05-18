@@ -114,7 +114,10 @@ helm upgrade --install webrtc ./helm/webrtc-frontend \
 
 Set `runtimeConfig.iceServers` in `values.yaml` if you need **TURN** (e.g. restrictive NAT).
 
-**DEV only — bypass Chrome certificate checks (e.g. self-signed WSS):** `open -a "Google Chrome" --args --ignore-certificate-errors --user-data-dir=/tmp/chrome-insecure-dev-profile`
+**DEV only — bypass browser certificate checks for self-signed WSS:**
+- macOS Chrome: `open -a "Google Chrome" --args --ignore-certificate-errors --user-data-dir=/tmp/chrome-insecure-dev-profile`
+- Linux Chrome/Chromium: `google-chrome --ignore-certificate-errors --user-data-dir=/tmp/chrome-insecure-dev-profile`
+- Firefox: create a temporary profile and trust the cert manually; Firefox has no generic `--ignore-certificate-errors` flag.
 
 ## Troubleshooting
 
